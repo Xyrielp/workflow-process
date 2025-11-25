@@ -49,19 +49,31 @@ export default function Home() {
 
   // Load tasks from localStorage on mount
   useEffect(() => {
-    const savedTasks = localStorage.getItem('workflow-tasks')
-    if (savedTasks) {
-      setTasks(JSON.parse(savedTasks).map((task: any) => ({
-        ...task,
-        createdAt: new Date(task.createdAt),
-        completedAt: task.completedAt ? new Date(task.completedAt) : undefined
-      })))
+    if (typeof window !== 'undefined') {
+      const savedTasks = localStorage.getItem('workflow-tasks')
+      if (savedTasks) {
+        try {
+          setTasks(JSON.parse(savedTasks).map((task: any) => ({
+            ...task,
+            createdAt: new Date(task.createdAt),
+            completedAt: task.completedAt ? new Date(task.completedAt) : undefined
+          })))
+        } catch (error) {
+          console.error('Error loading tasks:', error)
+        }
+      }
     }
   }, [])
 
   // Save tasks to localStorage whenever tasks change
   useEffect(() => {
-    localStorage.setItem('workflow-tasks', JSON.stringify(tasks))
+    if (typeof window !== 'undefined' && tasks.length > 0) {
+      try {
+        localStorage.setItem('workflow-tasks', JSON.stringify(tasks))
+      } catch (error) {
+        console.error('Error saving tasks:', error)
+      }
+    }
   }, [tasks])
 
   const addTask = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
