@@ -1,0 +1,35 @@
+{
+  "name": "Business Process Mapping Tool",
+  "short_name": "ProcessMap",
+  "description": "Organize and manage your business processes with structured workflows",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Create Process",
+      "short_name": "New Process",
+      "description": "Create a new business process",
+      "url": "/?action=create-process",
+      "icons": [{ "src": "/icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "View Dashboard",
+      "short_name": "Dashboard",
+      "description": "View process dashboard",
+      "url": "/?tab=processes",
+      "icons": [{ "src": "/icon.svg", "sizes": "any" }]
+    }
+  ]
+}

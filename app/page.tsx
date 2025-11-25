@@ -7,6 +7,7 @@ import ProcessDashboard from '@/components/ProcessDashboard'
 import TaskForm from '@/components/TaskForm'
 import TaskCard from '@/components/TaskCard'
 import SearchAndFilter from '@/components/SearchAndFilter'
+import PWAInstaller from '@/components/PWAInstaller'
 import { BusinessProcess, Task, ProcessStats, TaskStats } from '@/types'
 
 export default function Home() {
@@ -269,6 +270,7 @@ export default function Home() {
 
   return (
     <div className="w-full">
+      <PWAInstaller />
       {/* Navigation Tabs */}
       <div className="mb-6">
         <div className="border-b border-gray-200">
