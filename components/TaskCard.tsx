@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { CheckCircle, Circle, Clock, ChevronDown, ChevronUp, Calendar, Tag, AlertTriangle, Timer } from 'lucide-react'
 import { Task } from '@/types'
+import FlowchartWorkflow from './FlowchartWorkflow'
 
 interface TaskCardProps {
   task: Task
@@ -124,10 +125,10 @@ export default function TaskCard({ task, onStepToggle, onDelete }: TaskCardProps
             </div>
           )}
           
-          {/* Enhanced Dot Map Workflow */}
+          {/* Flowchart Workflow */}
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
-              <h4 className="font-medium text-gray-700 text-sm">Workflow Progress:</h4>
+              <h4 className="font-medium text-gray-700 text-sm">Workflow Flowchart:</h4>
               {task.estimatedTotalTime && (
                 <span className="text-xs text-gray-500 flex items-center gap-1">
                   <Timer size={12} />
@@ -136,88 +137,10 @@ export default function TaskCard({ task, onStepToggle, onDelete }: TaskCardProps
               )}
             </div>
             
-            <div className="space-y-1">
-              {task.workflow
-                .sort((a, b) => a.order - b.order)
-                .map((step, index) => (
-                  <div key={step.id} className="relative">
-                    {/* Enhanced Connecting Line */}
-                    {index < task.workflow.length - 1 && (
-                      <div className={`absolute left-3 top-10 w-0.5 h-8 ${
-                        step.completed ? 'bg-green-300' : 'bg-gray-300'
-                      }`}></div>
-                    )}
-                    
-                    {/* Enhanced Step Item */}
-                    <div
-                      className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all min-h-[52px] ${
-                        step.completed 
-                          ? 'bg-green-50 hover:bg-green-100 border border-green-200' 
-                          : 'hover:bg-gray-50 hover:shadow-sm'
-                      }`}
-                      onClick={() => onStepToggle(task.id, step.id)}
-                    >
-                      {/* Enhanced Dot */}
-                      <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
-                        step.completed 
-                          ? 'bg-green-500 border-green-500 shadow-sm' 
-                          : 'bg-white border-gray-300 hover:border-blue-400 hover:shadow-sm'
-                      }`}>
-                        {step.completed ? (
-                          <CheckCircle className="text-white" size={16} />
-                        ) : (
-                          <div className={`w-3 h-3 rounded-full ${
-                            step.priority === 'high' ? 'bg-red-400' :
-                            step.priority === 'medium' ? 'bg-yellow-400' : 'bg-gray-400'
-                          }`}></div>
-                        )}
-                      </div>
-                      
-                      {/* Enhanced Step Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className={`text-sm sm:text-base font-medium ${
-                            step.completed ? 'line-through text-gray-500' : 'text-gray-800'
-                          }`}>
-                            {step.title}
-                          </span>
-                          {step.priority === 'high' && !step.completed && (
-                            <span className="text-red-500 text-xs">🔥</span>
-                          )}
-                        </div>
-                        
-                        {step.description && (
-                          <p className="text-xs text-gray-500 mt-1">{step.description}</p>
-                        )}
-                        
-                        <div className="flex items-center gap-3 mt-1">
-                          {step.estimatedTime && (
-                            <span className="text-xs text-gray-400 flex items-center gap-1">
-                              <Clock size={10} />
-                              {step.estimatedTime}m
-                            </span>
-                          )}
-                          
-                          {step.tags && step.tags.length > 0 && (
-                            <div className="flex gap-1">
-                              {step.tags.slice(0, 2).map(tag => (
-                                <span key={tag} className="text-xs bg-blue-50 text-blue-600 px-1 rounded">
-                                  {tag}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {/* Step Number */}
-                      <span className="text-xs text-gray-400 font-medium shrink-0 bg-gray-100 px-2 py-1 rounded">
-                        #{step.order + 1}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-            </div>
+            <FlowchartWorkflow 
+              steps={task.workflow}
+              onStepToggle={(stepId) => onStepToggle(task.id, stepId)}
+            />
           </div>
 
           {completedSteps === totalSteps && (

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Plus, X, Calendar, Clock, Tag, Zap } from 'lucide-react'
 import { Task, WorkflowStep, TaskTemplate } from '@/types'
+import FlowchartBuilder from './FlowchartBuilder'
 
 interface TaskFormProps {
   onSubmit: (task: Omit<Task, 'id' | 'createdAt'>) => void
@@ -18,22 +19,9 @@ export default function TaskForm({ onSubmit, templates = [] }: TaskFormProps) {
   const [tags, setTags] = useState<string[]>([])
   const [currentTag, setCurrentTag] = useState('')
   const [steps, setSteps] = useState<Omit<WorkflowStep, 'id' | 'completed'>[]>([])
-  const [currentStep, setCurrentStep] = useState('')
-  const [currentStepTime, setCurrentStepTime] = useState('')
   const [selectedTemplate, setSelectedTemplate] = useState('')
 
-  const addStep = () => {
-    if (currentStep.trim()) {
-      setSteps([...steps, { 
-        title: currentStep.trim(), 
-        order: steps.length,
-        estimatedTime: currentStepTime ? parseInt(currentStepTime) : undefined,
-        priority: 'medium'
-      }])
-      setCurrentStep('')
-      setCurrentStepTime('')
-    }
-  }
+
 
   const addTag = () => {
     if (currentTag.trim() && !tags.includes(currentTag.trim())) {
@@ -57,9 +45,7 @@ export default function TaskForm({ onSubmit, templates = [] }: TaskFormProps) {
     }
   }
 
-  const removeStep = (index: number) => {
-    setSteps(steps.filter((_, i) => i !== index))
-  }
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -201,63 +187,10 @@ export default function TaskForm({ onSubmit, templates = [] }: TaskFormProps) {
       </div>
 
       <div className="mb-4">
-        <h3 className="font-medium mb-3">Workflow Steps</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
-          <input
-            type="text"
-            placeholder="Add workflow step"
-            value={currentStep}
-            onChange={(e) => setCurrentStep(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addStep())}
-            className="sm:col-span-2 p-3 text-base border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Clock className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-              <input
-                type="number"
-                placeholder="Min"
-                value={currentStepTime}
-                onChange={(e) => setCurrentStepTime(e.target.value)}
-                className="w-full pl-8 pr-2 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={addStep}
-              className="px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 active:bg-blue-700 flex items-center justify-center"
-            >
-              <Plus size={18} />
-            </button>
-          </div>
-        </div>
-
-        {steps.length > 0 && (
-          <div className="space-y-2">
-            {steps.map((step, index) => (
-              <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <span className="text-sm font-medium text-gray-600 min-w-[24px]">#{index + 1}</span>
-                <span className="flex-1 text-sm sm:text-base">{step.title}</span>
-                {step.estimatedTime && (
-                  <span className="text-xs text-gray-500 flex items-center gap-1">
-                    <Clock size={12} />
-                    {step.estimatedTime}m
-                  </span>
-                )}
-                <button
-                  type="button"
-                  onClick={() => removeStep(index)}
-                  className="text-red-500 hover:text-red-700 active:text-red-800 p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-            ))}
-            <div className="text-right text-sm text-gray-600">
-              Total estimated time: {steps.reduce((sum, step) => sum + (step.estimatedTime || 0), 0)} minutes
-            </div>
-          </div>
-        )}
+        <FlowchartBuilder 
+          steps={steps}
+          onStepsChange={setSteps}
+        />
       </div>
 
       <button
