@@ -362,94 +362,95 @@ export default function Home() {
           {/* Task Creation Form */}
           <TaskForm onSubmit={addTask} />
       
-      {/* Search and Filter */}
-      {tasks.length > 0 && (
-        <SearchAndFilter 
-          onSearch={setSearchQuery}
-          onFilter={setFilters}
-          categories={categories}
-          tags={allTags}
-        />
-      )}
-      
-      {/* Active Tasks */}
-      {activeTasks.length > 0 && (
-        <div className="mb-6 sm:mb-8">
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">
-              Active Tasks ({activeTasks.length})
-            </h2>
-            <div className="text-sm text-gray-500">
-              {searchQuery && `Filtered by "${searchQuery}"`}
+          {/* Search and Filter */}
+          {tasks.length > 0 && (
+            <SearchAndFilter 
+              onSearch={setSearchQuery}
+              onFilter={setFilters}
+              categories={categories}
+              tags={allTags}
+            />
+          )}
+          
+          {/* Active Tasks */}
+          {activeTasks.length > 0 && (
+            <div className="mb-6 sm:mb-8">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">
+                  Active Tasks ({activeTasks.length})
+                </h2>
+                <div className="text-sm text-gray-500">
+                  {searchQuery && `Filtered by "${searchQuery}"`}
+                </div>
+              </div>
+              <div className="space-y-3 sm:space-y-4">
+                {activeTasks
+                  .sort((a, b) => {
+                    const priorityOrder = { high: 3, medium: 2, low: 1 }
+                    if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
+                      return priorityOrder[b.priority] - priorityOrder[a.priority]
+                    }
+                    if (a.dueDate && b.dueDate) {
+                      return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+                    }
+                    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                  })
+                  .map(task => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      onStepToggle={toggleStep}
+                      onDelete={deleteTask}
+                    />
+                  ))}
+              </div>
             </div>
-          </div>
-          <div className="space-y-3 sm:space-y-4">
-            {activeTasks
-              .sort((a, b) => {
-                // Sort by priority (high first), then by due date
-                const priorityOrder = { high: 3, medium: 2, low: 1 }
-                if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
-                  return priorityOrder[b.priority] - priorityOrder[a.priority]
-                }
-                if (a.dueDate && b.dueDate) {
-                  return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
-                }
-                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-              })
-              .map(task => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  onStepToggle={toggleStep}
-                  onDelete={deleteTask}
-                />
-              ))}
-          </div>
-        </div>
-      )}
+          )}
 
-      {/* Completed Tasks */}
-      {completedTasks.length > 0 && (
-        <div>
-          <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">
-            Completed Tasks ({completedTasks.length})
-          </h2>
-          <div className="space-y-3 sm:space-y-4">
-            {completedTasks
-              .sort((a, b) => new Date(b.completedAt!).getTime() - new Date(a.completedAt!).getTime())
-              .map(task => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  onStepToggle={toggleStep}
-                  onDelete={deleteTask}
-                />
-              ))}
-          </div>
-        </div>
-      )}
+          {/* Completed Tasks */}
+          {completedTasks.length > 0 && (
+            <div>
+              <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">
+                Completed Tasks ({completedTasks.length})
+              </h2>
+              <div className="space-y-3 sm:space-y-4">
+                {completedTasks
+                  .sort((a, b) => new Date(b.completedAt!).getTime() - new Date(a.completedAt!).getTime())
+                  .map(task => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      onStepToggle={toggleStep}
+                      onDelete={deleteTask}
+                    />
+                  ))}
+              </div>
+            </div>
+          )}
 
-      {/* Empty State */}
-      {tasks.length === 0 && (
-        <div className="text-center py-16 sm:py-20">
-          <div className="text-6xl mb-4">🚀</div>
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">Ready to boost your productivity?</h3>
-          <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            Create your first workflow task above and never miss a step in your process again!
-          </p>
-          <div className="text-sm text-gray-500">
-            💡 Try using a template to get started quickly
-          </div>
-        </div>
-      )}
-      
-      {/* No Results State */}
-      {tasks.length > 0 && filteredTasks.length === 0 && (
-        <div className="text-center py-12 text-gray-500">
-          <div className="text-4xl mb-4">🔍</div>
-          <p className="text-lg">No tasks match your search criteria</p>
-          <p className="text-sm mt-2">Try adjusting your filters or search terms</p>
-        </div>
+          {/* Empty State */}
+          {tasks.length === 0 && (
+            <div className="text-center py-16 sm:py-20">
+              <div className="text-6xl mb-4">🚀</div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Ready to boost your productivity?</h3>
+              <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                Create your first workflow task above and never miss a step in your process again!
+              </p>
+              <div className="text-sm text-gray-500">
+                💡 Try using a template to get started quickly
+              </div>
+            </div>
+          )}
+          
+          {/* No Results State */}
+          {tasks.length > 0 && filteredTasks.length === 0 && (
+            <div className="text-center py-12 text-gray-500">
+              <div className="text-4xl mb-4">🔍</div>
+              <p className="text-lg">No tasks match your search criteria</p>
+              <p className="text-sm mt-2">Try adjusting your filters or search terms</p>
+            </div>
+          )}
+        </>
       )}
     </div>
   )
