@@ -17,11 +17,12 @@ export default function FlowchartBuilder({ steps, onStepsChange }: FlowchartBuil
 
   const addStep = () => {
     if (currentStep.trim()) {
+      const timeValue = currentTime ? parseInt(currentTime, 10) : undefined
       const newStep = {
         title: currentStep.trim(),
         order: steps.length,
         priority: currentPriority,
-        estimatedTime: currentTime ? parseInt(currentTime) : undefined,
+        estimatedTime: timeValue && timeValue > 0 ? timeValue : undefined,
       }
       onStepsChange([...steps, newStep])
       setCurrentStep('')
@@ -38,17 +39,22 @@ export default function FlowchartBuilder({ steps, onStepsChange }: FlowchartBuil
   const moveStep = (index: number, direction: 'up' | 'down') => {
     if (
       (direction === 'up' && index === 0) || 
-      (direction === 'down' && index === steps.length - 1)
+      (direction === 'down' && index === steps.length - 1) ||
+      index < 0 || index >= steps.length
     ) return
 
     const newSteps = [...steps]
     const targetIndex = direction === 'up' ? index - 1 : index + 1
     
-    [newSteps[index], newSteps[targetIndex]] = [newSteps[targetIndex], newSteps[index]]
-    
-    // Update order numbers
-    newSteps.forEach((step, i) => step.order = i)
-    onStepsChange(newSteps)
+    if (targetIndex >= 0 && targetIndex < newSteps.length) {
+      [newSteps[index], newSteps[targetIndex]] = [newSteps[targetIndex], newSteps[index]]
+      
+      // Update order numbers
+      newSteps.forEach((step, i) => {
+        step.order = i
+      })
+      onStepsChange(newSteps)
+    }
   }
 
   return (
@@ -63,7 +69,12 @@ export default function FlowchartBuilder({ steps, onStepsChange }: FlowchartBuil
             placeholder="Step description"
             value={currentStep}
             onChange={(e) => setCurrentStep(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && addStep()}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                addStep()
+              }
+            }}
             className="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           
@@ -82,10 +93,13 @@ export default function FlowchartBuilder({ steps, onStepsChange }: FlowchartBuil
             placeholder="Minutes"
             value={currentTime}
             onChange={(e) => setCurrentTime(e.target.value)}
+            min="1"
+            max="9999"
             className="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           
           <button
+            type="button"
             onClick={addStep}
             disabled={!currentStep.trim()}
             className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 flex items-center justify-center gap-2"
@@ -141,6 +155,7 @@ export default function FlowchartBuilder({ steps, onStepsChange }: FlowchartBuil
                   <div className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-1">
                     {index > 0 && (
                       <button
+                        type="button"
                         onClick={() => moveStep(index, 'up')}
                         className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-blue-600"
                         title="Move up"
@@ -150,6 +165,7 @@ export default function FlowchartBuilder({ steps, onStepsChange }: FlowchartBuil
                     )}
                     {index < steps.length - 1 && (
                       <button
+                        type="button"
                         onClick={() => moveStep(index, 'down')}
                         className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-blue-600"
                         title="Move down"
@@ -158,6 +174,7 @@ export default function FlowchartBuilder({ steps, onStepsChange }: FlowchartBuil
                       </button>
                     )}
                     <button
+                      type="button"
                       onClick={() => removeStep(index)}
                       className="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
                       title="Remove step"
