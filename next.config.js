@@ -7,11 +7,12 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   swcMinify: true,
-  experimental: {
-    optimizePackageImports: ['lucide-react']
-  },
   images: {
     unoptimized: true
+  },
+  staticPageGenerationTimeout: 120,
+  experimental: {
+    optimizePackageImports: ['lucide-react']
   }
 }
 
