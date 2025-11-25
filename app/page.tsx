@@ -1,13 +1,17 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import ProcessBuilder from '@/components/ProcessBuilder'
+import ProcessCard from '@/components/ProcessCard'
+import ProcessDashboard from '@/components/ProcessDashboard'
 import TaskForm from '@/components/TaskForm'
 import TaskCard from '@/components/TaskCard'
-import TaskStatsComponent from '@/components/TaskStats'
 import SearchAndFilter from '@/components/SearchAndFilter'
-import { Task, TaskTemplate, TaskStats } from '@/types'
+import { BusinessProcess, Task, ProcessStats, TaskStats } from '@/types'
 
 export default function Home() {
+  const [activeTab, setActiveTab] = useState<'processes' | 'tasks'>('processes')
+  const [processes, setProcesses] = useState<BusinessProcess[]>([])
   const [tasks, setTasks] = useState<Task[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [filters, setFilters] = useState<{
@@ -16,40 +20,33 @@ export default function Home() {
     status?: 'active' | 'completed' | 'overdue'
     tags?: string[]
   }>({})
-  const [templates] = useState<TaskTemplate[]>([
-    {
-      id: '1',
-      name: 'Website Launch',
-      description: 'Complete website development and deployment',
-      category: 'Development',
-      tags: ['web', 'development', 'launch'],
-      workflow: [
-        { title: 'Design mockups', order: 0, estimatedTime: 120, priority: 'high' },
-        { title: 'Frontend development', order: 1, estimatedTime: 480, priority: 'high' },
-        { title: 'Backend API', order: 2, estimatedTime: 360, priority: 'medium' },
-        { title: 'Testing & QA', order: 3, estimatedTime: 180, priority: 'medium' },
-        { title: 'Deploy to production', order: 4, estimatedTime: 60, priority: 'high' }
-      ]
-    },
-    {
-      id: '2', 
-      name: 'Content Marketing',
-      description: 'Create and publish marketing content',
-      category: 'Marketing',
-      tags: ['content', 'marketing', 'social'],
-      workflow: [
-        { title: 'Research topics', order: 0, estimatedTime: 90, priority: 'medium' },
-        { title: 'Write blog post', order: 1, estimatedTime: 180, priority: 'high' },
-        { title: 'Create social media graphics', order: 2, estimatedTime: 60, priority: 'low' },
-        { title: 'Schedule posts', order: 3, estimatedTime: 30, priority: 'medium' },
-        { title: 'Monitor engagement', order: 4, estimatedTime: 45, priority: 'low' }
-      ]
-    }
-  ])
+  
+  const departments = ['Sales', 'Marketing', 'Operations', 'HR', 'Finance', 'IT', 'Customer Service', 'Legal']
+  const roles = ['Manager', 'Analyst', 'Coordinator', 'Specialist', 'Director', 'Associate', 'Lead', 'Executive']
 
-  // Load tasks from localStorage on mount
+
+  // Load data from localStorage on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      // Load processes
+      const savedProcesses = localStorage.getItem('business-processes')
+      if (savedProcesses) {
+        try {
+          const parsedProcesses = JSON.parse(savedProcesses)
+          if (Array.isArray(parsedProcesses)) {
+            setProcesses(parsedProcesses.map((process: any) => ({
+              ...process,
+              createdAt: new Date(process.createdAt),
+              lastModified: new Date(process.lastModified)
+            })))
+          }
+        } catch (error) {
+          console.error('Error loading processes:', error)
+          localStorage.removeItem('business-processes')
+        }
+      }
+      
+      // Load tasks
       const savedTasks = localStorage.getItem('workflow-tasks')
       if (savedTasks) {
         try {
@@ -72,7 +69,21 @@ export default function Home() {
     }
   }, [])
 
-  // Save tasks to localStorage whenever tasks change
+  // Save data to localStorage whenever they change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        if (processes.length > 0) {
+          localStorage.setItem('business-processes', JSON.stringify(processes))
+        } else {
+          localStorage.removeItem('business-processes')
+        }
+      } catch (error) {
+        console.error('Error saving processes:', error)
+      }
+    }
+  }, [processes])
+  
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -86,6 +97,38 @@ export default function Home() {
       }
     }
   }, [tasks])
+
+  const addProcess = (processData: Omit<BusinessProcess, 'id' | 'createdAt' | 'lastModified'>) => {
+    const newProcess: BusinessProcess = {
+      ...processData,
+      id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
+      createdAt: new Date(),
+      lastModified: new Date()
+    }
+    setProcesses(prev => [newProcess, ...prev])
+  }
+  
+  const updateProcessStatus = (processId: string, status: 'draft' | 'active' | 'archived') => {
+    setProcesses(prev => prev.map(process => 
+      process.id === processId 
+        ? { ...process, status, lastModified: new Date() }
+        : process
+    ))
+  }
+  
+  const toggleProcessStep = (processId: string, stepId: string) => {
+    setProcesses(prev => prev.map(process => {
+      if (process.id === processId) {
+        const updatedWorkflow = process.workflow.map(step => 
+          step.id === stepId 
+            ? { ...step, status: step.status === 'completed' ? 'not-started' : 'completed' as const }
+            : step
+        )
+        return { ...process, workflow: updatedWorkflow, lastModified: new Date() }
+      }
+      return process
+    }))
+  }
 
   const addTask = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
     const newTask: Task = {
@@ -164,8 +207,34 @@ export default function Home() {
   const activeTasks = filteredTasks.filter(task => !task.completedAt)
   const completedTasks = filteredTasks.filter(task => task.completedAt)
   
-  // Analytics
-  const stats: TaskStats = useMemo(() => {
+  // Process Analytics
+  const processStats: ProcessStats = useMemo(() => {
+    const total = processes.length
+    const active = processes.filter(p => p.status === 'active').length
+    const allTasks = processes.flatMap(p => p.workflow)
+    const completed = allTasks.filter(t => t.status === 'completed').length
+    const blocked = allTasks.filter(t => t.status === 'blocked').length
+    
+    const deptBreakdown = processes.reduce((acc, process) => {
+      acc[process.department] = (acc[process.department] || 0) + 1
+      return acc
+    }, {} as { [key: string]: number })
+    
+    const efficiency = allTasks.length > 0 ? Math.round((completed / allTasks.length) * 100) : 0
+    
+    return {
+      totalProcesses: total,
+      activeProcesses: active,
+      completedTasks: completed,
+      blockedTasks: blocked,
+      departmentBreakdown: deptBreakdown,
+      averageProcessTime: 0,
+      efficiencyScore: efficiency
+    }
+  }, [processes])
+  
+  // Task Analytics
+  const taskStats: TaskStats = useMemo(() => {
     const total = tasks.length
     const completed = tasks.filter(t => t.completedAt).length
     const active = tasks.filter(t => !t.completedAt).length
@@ -191,16 +260,107 @@ export default function Home() {
     }
   }, [tasks])
   
-  const categories = [...new Set(tasks.map(t => t.category).filter((cat): cat is string => Boolean(cat)))]
-  const allTags = [...new Set(tasks.flatMap(t => t.tags))]
+  const categories = [...new Set([...tasks.map(t => t.category), ...processes.map(p => p.category)].filter((cat): cat is string => Boolean(cat)))]
+  const allTags = [...new Set([...tasks.flatMap(t => t.tags), ...processes.flatMap(p => p.tags)])]
+  
+  const activeProcesses = processes.filter(p => p.status === 'active')
+  const draftProcesses = processes.filter(p => p.status === 'draft')
+  const archivedProcesses = processes.filter(p => p.status === 'archived')
 
   return (
     <div className="w-full">
-      {/* Analytics Dashboard */}
-      <TaskStatsComponent stats={stats} />
+      {/* Navigation Tabs */}
+      <div className="mb-6">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveTab('processes')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'processes'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Business Processes
+            </button>
+            <button
+              onClick={() => setActiveTab('tasks')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'tasks'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Individual Tasks
+            </button>
+          </nav>
+        </div>
+      </div>
       
-      {/* Task Creation Form */}
-      <TaskForm onSubmit={addTask} templates={templates} />
+      {activeTab === 'processes' ? (
+        <>
+          {/* Process Dashboard */}
+          <ProcessDashboard stats={processStats} />
+          
+          {/* Process Creation Form */}
+          <ProcessBuilder 
+            onSubmit={addProcess}
+            departments={departments}
+            roles={roles}
+          />
+          
+          {/* Active Processes */}
+          {activeProcesses.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                Active Processes ({activeProcesses.length})
+              </h2>
+              <div className="space-y-4">
+                {activeProcesses.map(process => (
+                  <ProcessCard
+                    key={process.id}
+                    process={process}
+                    onStepToggle={toggleProcessStep}
+                    onStatusChange={updateProcessStatus}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Draft Processes */}
+          {draftProcesses.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                Draft Processes ({draftProcesses.length})
+              </h2>
+              <div className="space-y-4">
+                {draftProcesses.map(process => (
+                  <ProcessCard
+                    key={process.id}
+                    process={process}
+                    onStepToggle={toggleProcessStep}
+                    onStatusChange={updateProcessStatus}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {processes.length === 0 && (
+            <div className="text-center py-16">
+              <div className="text-6xl mb-4">🏢</div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Start Mapping Your Business Processes</h3>
+              <p className="text-gray-600 max-w-md mx-auto">
+                Create structured workflows to organize your business operations and ensure nothing falls through the cracks.
+              </p>
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          {/* Task Creation Form */}
+          <TaskForm onSubmit={addTask} />
       
       {/* Search and Filter */}
       {tasks.length > 0 && (
