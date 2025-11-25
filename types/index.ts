@@ -4,6 +4,9 @@ export interface WorkflowStep {
   description?: string;
   completed: boolean;
   order: number;
+  estimatedTime?: number; // in minutes
+  priority?: 'low' | 'medium' | 'high';
+  tags?: string[];
 }
 
 export interface Task {
@@ -13,4 +16,28 @@ export interface Task {
   workflow: WorkflowStep[];
   createdAt: Date;
   completedAt?: Date;
+  dueDate?: Date;
+  priority: 'low' | 'medium' | 'high';
+  category?: string;
+  tags: string[];
+  estimatedTotalTime?: number;
+  actualTimeSpent?: number;
+}
+
+export interface TaskTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  workflow: Omit<WorkflowStep, 'id' | 'completed'>[];
+  category?: string;
+  tags: string[];
+}
+
+export interface TaskStats {
+  totalTasks: number;
+  completedTasks: number;
+  activeTasks: number;
+  overdueTasks: number;
+  averageCompletionTime: number;
+  productivityScore: number;
 }
