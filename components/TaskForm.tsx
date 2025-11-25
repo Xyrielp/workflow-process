@@ -45,8 +45,8 @@ export default function TaskForm({ onSubmit }: TaskFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md mb-6">
-      <h2 className="text-xl font-semibold mb-4">Create New Task</h2>
+    <form onSubmit={handleSubmit} className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-4 sm:mb-6">
+      <h2 className="text-lg sm:text-xl font-semibold mb-4">Create New Task</h2>
       
       <div className="mb-4">
         <input
@@ -54,7 +54,7 @@ export default function TaskForm({ onSubmit }: TaskFormProps) {
           placeholder="Task title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full p-4 text-base border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         />
       </div>
@@ -64,43 +64,43 @@ export default function TaskForm({ onSubmit }: TaskFormProps) {
           placeholder="Task description (optional)"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full p-4 text-base border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
           rows={3}
         />
       </div>
 
       <div className="mb-4">
-        <h3 className="font-medium mb-2">Workflow Steps</h3>
-        <div className="flex gap-2 mb-3">
+        <h3 className="font-medium mb-3">Workflow Steps</h3>
+        <div className="flex flex-col sm:flex-row gap-2 mb-3">
           <input
             type="text"
             placeholder="Add workflow step"
             value={currentStep}
             onChange={(e) => setCurrentStep(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addStep())}
-            className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 p-3 text-base border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
             type="button"
             onClick={addStep}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-1"
+            className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 active:bg-blue-700 flex items-center justify-center gap-2 font-medium min-h-[48px]"
           >
-            <Plus size={16} /> Add
+            <Plus size={18} /> <span>Add</span>
           </button>
         </div>
 
         {steps.length > 0 && (
           <div className="space-y-2">
             {steps.map((step, index) => (
-              <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                <span className="text-sm text-gray-600">#{index + 1}</span>
-                <span className="flex-1">{step.title}</span>
+              <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <span className="text-sm font-medium text-gray-600 min-w-[24px]">#{index + 1}</span>
+                <span className="flex-1 text-sm sm:text-base">{step.title}</span>
                 <button
                   type="button"
                   onClick={() => removeStep(index)}
-                  className="text-red-500 hover:text-red-700"
+                  className="text-red-500 hover:text-red-700 active:text-red-800 p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
                 >
-                  <X size={16} />
+                  <X size={18} />
                 </button>
               </div>
             ))}
@@ -111,7 +111,7 @@ export default function TaskForm({ onSubmit }: TaskFormProps) {
       <button
         type="submit"
         disabled={!title.trim() || steps.length === 0}
-        className="w-full py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+        className="w-full py-4 bg-green-500 text-white rounded-lg hover:bg-green-600 active:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium text-base min-h-[48px]"
       >
         Create Task
       </button>

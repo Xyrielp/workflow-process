@@ -58,13 +58,13 @@ export default function Home() {
   const completedTasks = tasks.filter(task => task.completedAt)
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="w-full">
       <TaskForm onSubmit={addTask} />
       
       {activeTasks.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Active Tasks</h2>
-          <div className="grid gap-6 md:grid-cols-2">
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">Active Tasks</h2>
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
             {activeTasks.map(task => (
               <TaskCard
                 key={task.id}
@@ -78,8 +78,8 @@ export default function Home() {
 
       {completedTasks.length > 0 && (
         <div>
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Completed Tasks</h2>
-          <div className="grid gap-6 md:grid-cols-2">
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">Completed Tasks</h2>
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
             {completedTasks.map(task => (
               <TaskCard
                 key={task.id}
@@ -92,8 +92,8 @@ export default function Home() {
       )}
 
       {tasks.length === 0 && (
-        <div className="text-center py-12 text-gray-500">
-          <p className="text-lg">No tasks yet. Create your first task above!</p>
+        <div className="text-center py-12 sm:py-16 text-gray-500">
+          <p className="text-base sm:text-lg px-4">No tasks yet. Create your first task above!</p>
         </div>
       )}
     </div>
