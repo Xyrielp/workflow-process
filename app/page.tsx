@@ -8,6 +8,7 @@ import TaskForm from '@/components/TaskForm'
 import TaskCard from '@/components/TaskCard'
 import SearchAndFilter from '@/components/SearchAndFilter'
 import PWAInstaller from '@/components/PWAInstaller'
+import DataManager from '@/components/DataManager'
 import { BusinessProcess, Task, ProcessStats, TaskStats } from '@/types'
 
 export default function Home() {
@@ -26,10 +27,11 @@ export default function Home() {
   const roles = ['Manager', 'Analyst', 'Coordinator', 'Specialist', 'Director', 'Associate', 'Lead', 'Executive']
 
 
-  // Load data from localStorage on mount
+  // Load data from localStorage on mount with backup recovery
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Load processes
+      // Load processes with backup fallback
+      let processesLoaded = false
       const savedProcesses = localStorage.getItem('business-processes')
       if (savedProcesses) {
         try {
@@ -38,16 +40,40 @@ export default function Home() {
             setProcesses(parsedProcesses.map((process: any) => ({
               ...process,
               createdAt: new Date(process.createdAt),
-              lastModified: new Date(process.lastModified)
+              lastModified: new Date(process.lastModified),
+              workflow: process.workflow?.map((step: any) => ({
+                ...step,
+                status: step.status || 'not-started'
+              })) || []
             })))
+            processesLoaded = true
           }
         } catch (error) {
-          console.error('Error loading processes:', error)
-          localStorage.removeItem('business-processes')
+          console.error('Error loading processes, trying backup:', error)
         }
       }
       
-      // Load tasks
+      // Try backup if main data failed
+      if (!processesLoaded) {
+        const backupProcesses = localStorage.getItem('processes-backup')
+        if (backupProcesses) {
+          try {
+            const backup = JSON.parse(backupProcesses)
+            if (backup.data && Array.isArray(backup.data)) {
+              setProcesses(backup.data.map((process: any) => ({
+                ...process,
+                createdAt: new Date(process.createdAt),
+                lastModified: new Date(process.lastModified)
+              })))
+            }
+          } catch (error) {
+            console.error('Backup recovery failed:', error)
+          }
+        }
+      }
+      
+      // Load tasks with backup fallback
+      let tasksLoaded = false
       const savedTasks = localStorage.getItem('workflow-tasks')
       if (savedTasks) {
         try {
@@ -59,12 +85,38 @@ export default function Home() {
               completedAt: task.completedAt ? new Date(task.completedAt) : undefined,
               dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
               tags: task.tags || [],
-              priority: task.priority || 'medium'
+              priority: task.priority || 'medium',
+              workflow: task.workflow?.map((step: any) => ({
+                ...step,
+                completed: step.completed || false
+              })) || []
             })))
+            tasksLoaded = true
           }
         } catch (error) {
-          console.error('Error loading tasks:', error)
-          localStorage.removeItem('workflow-tasks')
+          console.error('Error loading tasks, trying backup:', error)
+        }
+      }
+      
+      // Try backup if main data failed
+      if (!tasksLoaded) {
+        const backupTasks = localStorage.getItem('tasks-backup')
+        if (backupTasks) {
+          try {
+            const backup = JSON.parse(backupTasks)
+            if (backup.data && Array.isArray(backup.data)) {
+              setTasks(backup.data.map((task: any) => ({
+                ...task,
+                createdAt: new Date(task.createdAt),
+                completedAt: task.completedAt ? new Date(task.completedAt) : undefined,
+                dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
+                tags: task.tags || [],
+                priority: task.priority || 'medium'
+              })))
+            }
+          } catch (error) {
+            console.error('Tasks backup recovery failed:', error)
+          }
         }
       }
     }
@@ -74,13 +126,21 @@ export default function Home() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
-        if (processes.length > 0) {
-          localStorage.setItem('business-processes', JSON.stringify(processes))
-        } else {
-          localStorage.removeItem('business-processes')
-        }
+        localStorage.setItem('business-processes', JSON.stringify(processes))
+        localStorage.setItem('processes-backup', JSON.stringify({
+          data: processes,
+          timestamp: new Date().toISOString(),
+          version: '1.0'
+        }))
       } catch (error) {
         console.error('Error saving processes:', error)
+        // Try to free up space by removing old backups
+        try {
+          localStorage.removeItem('processes-backup-old')
+          localStorage.setItem('business-processes', JSON.stringify(processes))
+        } catch (retryError) {
+          console.error('Failed to save even after cleanup:', retryError)
+        }
       }
     }
   }, [processes])
@@ -88,13 +148,21 @@ export default function Home() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
-        if (tasks.length > 0) {
-          localStorage.setItem('workflow-tasks', JSON.stringify(tasks))
-        } else {
-          localStorage.removeItem('workflow-tasks')
-        }
+        localStorage.setItem('workflow-tasks', JSON.stringify(tasks))
+        localStorage.setItem('tasks-backup', JSON.stringify({
+          data: tasks,
+          timestamp: new Date().toISOString(),
+          version: '1.0'
+        }))
       } catch (error) {
         console.error('Error saving tasks:', error)
+        // Try to free up space
+        try {
+          localStorage.removeItem('tasks-backup-old')
+          localStorage.setItem('workflow-tasks', JSON.stringify(tasks))
+        } catch (retryError) {
+          console.error('Failed to save even after cleanup:', retryError)
+        }
       }
     }
   }, [tasks])
@@ -144,6 +212,20 @@ export default function Home() {
 
   const deleteTask = (taskId: string) => {
     setTasks(prev => prev.filter(task => task.id !== taskId))
+  }
+  
+  const handleDataRestore = (restoredProcesses: BusinessProcess[], restoredTasks: Task[]) => {
+    setProcesses(restoredProcesses.map(process => ({
+      ...process,
+      createdAt: new Date(process.createdAt),
+      lastModified: new Date(process.lastModified)
+    })))
+    setTasks(restoredTasks.map(task => ({
+      ...task,
+      createdAt: new Date(task.createdAt),
+      completedAt: task.completedAt ? new Date(task.completedAt) : undefined,
+      dueDate: task.dueDate ? new Date(task.dueDate) : undefined
+    })))
   }
 
   const toggleStep = (taskId: string, stepId: string) => {
@@ -271,6 +353,11 @@ export default function Home() {
   return (
     <div className="w-full">
       <PWAInstaller />
+      <DataManager 
+        processes={processes}
+        tasks={tasks}
+        onDataRestore={handleDataRestore}
+      />
       {/* Navigation Tabs */}
       <div className="mb-6">
         <div className="border-b border-gray-200">
