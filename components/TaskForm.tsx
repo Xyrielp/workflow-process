@@ -32,7 +32,7 @@ export default function TaskForm({ onSubmit }: TaskFormProps) {
         title: title.trim(),
         description: description.trim() || undefined,
         workflow: steps.map((step, index) => ({
-          id: crypto.randomUUID(),
+          id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
           ...step,
           order: index,
           completed: false

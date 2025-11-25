@@ -28,7 +28,7 @@ export default function Home() {
   const addTask = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
     const newTask: Task = {
       ...taskData,
-      id: crypto.randomUUID(),
+      id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15),
       createdAt: new Date()
     }
     setTasks(prev => [newTask, ...prev])
