@@ -53,13 +53,20 @@ export default function Home() {
       const savedTasks = localStorage.getItem('workflow-tasks')
       if (savedTasks) {
         try {
-          setTasks(JSON.parse(savedTasks).map((task: any) => ({
-            ...task,
-            createdAt: new Date(task.createdAt),
-            completedAt: task.completedAt ? new Date(task.completedAt) : undefined
-          })))
+          const parsedTasks = JSON.parse(savedTasks)
+          if (Array.isArray(parsedTasks)) {
+            setTasks(parsedTasks.map((task: any) => ({
+              ...task,
+              createdAt: new Date(task.createdAt),
+              completedAt: task.completedAt ? new Date(task.completedAt) : undefined,
+              dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
+              tags: task.tags || [],
+              priority: task.priority || 'medium'
+            })))
+          }
         } catch (error) {
           console.error('Error loading tasks:', error)
+          localStorage.removeItem('workflow-tasks')
         }
       }
     }
@@ -67,9 +74,13 @@ export default function Home() {
 
   // Save tasks to localStorage whenever tasks change
   useEffect(() => {
-    if (typeof window !== 'undefined' && tasks.length > 0) {
+    if (typeof window !== 'undefined') {
       try {
-        localStorage.setItem('workflow-tasks', JSON.stringify(tasks))
+        if (tasks.length > 0) {
+          localStorage.setItem('workflow-tasks', JSON.stringify(tasks))
+        } else {
+          localStorage.removeItem('workflow-tasks')
+        }
       } catch (error) {
         console.error('Error saving tasks:', error)
       }

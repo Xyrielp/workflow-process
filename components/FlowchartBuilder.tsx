@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, X, ArrowDown, Square, Diamond } from 'lucide-react'
+import { Plus, X, ArrowDown, Square } from 'lucide-react'
 import { WorkflowStep } from '@/types'
 
 interface FlowchartBuilderProps {
@@ -11,7 +11,7 @@ interface FlowchartBuilderProps {
 
 export default function FlowchartBuilder({ steps, onStepsChange }: FlowchartBuilderProps) {
   const [currentStep, setCurrentStep] = useState('')
-  const [currentStepType, setCurrentStepType] = useState<'process' | 'decision'>('process')
+
   const [currentPriority, setCurrentPriority] = useState<'low' | 'medium' | 'high'>('medium')
   const [currentTime, setCurrentTime] = useState('')
 

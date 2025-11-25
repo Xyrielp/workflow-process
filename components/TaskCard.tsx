@@ -13,7 +13,7 @@ interface TaskCardProps {
 
 export default function TaskCard({ task, onStepToggle, onDelete }: TaskCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
-  const [startTime, setStartTime] = useState<Date | null>(null)
+
   const completedSteps = task.workflow.filter(step => step.completed).length
   const totalSteps = task.workflow.length
   const progress = (completedSteps / totalSteps) * 100

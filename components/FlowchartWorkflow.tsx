@@ -1,6 +1,6 @@
 'use client'
 
-import { CheckCircle, Circle, ArrowDown, Diamond, Square, ArrowRight } from 'lucide-react'
+import { CheckCircle, Circle, ArrowDown } from 'lucide-react'
 import { WorkflowStep } from '@/types'
 
 interface FlowchartWorkflowProps {

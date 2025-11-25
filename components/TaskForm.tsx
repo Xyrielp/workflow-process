@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, X, Calendar, Clock, Tag, Zap } from 'lucide-react'
+import { Plus, X, Calendar, Tag } from 'lucide-react'
 import { Task, WorkflowStep, TaskTemplate } from '@/types'
 import FlowchartBuilder from './FlowchartBuilder'
 
@@ -20,8 +20,6 @@ export default function TaskForm({ onSubmit, templates = [] }: TaskFormProps) {
   const [currentTag, setCurrentTag] = useState('')
   const [steps, setSteps] = useState<Omit<WorkflowStep, 'id' | 'completed'>[]>([])
   const [selectedTemplate, setSelectedTemplate] = useState('')
-
-
 
   const addTag = () => {
     if (currentTag.trim() && !tags.includes(currentTag.trim())) {
@@ -44,8 +42,6 @@ export default function TaskForm({ onSubmit, templates = [] }: TaskFormProps) {
       setSteps(template.workflow)
     }
   }
-
-
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
