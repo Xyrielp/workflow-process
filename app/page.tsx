@@ -64,7 +64,7 @@ export default function Home() {
       {activeTasks.length > 0 && (
         <div className="mb-6 sm:mb-8">
           <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">Active Tasks</h2>
-          <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+          <div className="space-y-3 sm:space-y-4">
             {activeTasks.map(task => (
               <TaskCard
                 key={task.id}
@@ -79,7 +79,7 @@ export default function Home() {
       {completedTasks.length > 0 && (
         <div>
           <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">Completed Tasks</h2>
-          <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+          <div className="space-y-3 sm:space-y-4">
             {completedTasks.map(task => (
               <TaskCard
                 key={task.id}

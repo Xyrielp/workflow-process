@@ -1,6 +1,7 @@
 'use client'
 
-import { CheckCircle, Circle, Clock } from 'lucide-react'
+import { useState } from 'react'
+import { CheckCircle, Circle, Clock, ChevronDown, ChevronUp } from 'lucide-react'
 import { Task } from '@/types'
 
 interface TaskCardProps {
@@ -9,68 +10,107 @@ interface TaskCardProps {
 }
 
 export default function TaskCard({ task, onStepToggle }: TaskCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false)
   const completedSteps = task.workflow.filter(step => step.completed).length
   const totalSteps = task.workflow.length
   const progress = (completedSteps / totalSteps) * 100
 
   return (
-    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 gap-2">
-        <div className="flex-1">
-          <h3 className="text-lg sm:text-xl font-semibold text-gray-800 leading-tight">{task.title}</h3>
-          {task.description && (
-            <p className="text-gray-600 mt-2 text-sm sm:text-base">{task.description}</p>
-          )}
+    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      {/* Header - Always Visible */}
+      <div 
+        className="p-4 sm:p-5 cursor-pointer hover:bg-gray-50 transition-colors"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-800 truncate">{task.title}</h3>
+            <div className="flex items-center gap-4 mt-2">
+              <span className="text-xs sm:text-sm text-gray-500 font-medium">
+                {completedSteps}/{totalSteps} steps
+              </span>
+              <div className="flex items-center gap-1 text-xs text-gray-400">
+                <Clock size={12} />
+                {new Date(task.createdAt).toLocaleDateString()}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 ml-3">
+            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+              <span className="text-xs font-bold text-gray-600">{Math.round(progress)}%</span>
+            </div>
+            {isExpanded ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
+          </div>
         </div>
-        <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 shrink-0">
-          <Clock size={14} className="sm:w-4 sm:h-4" />
-          {new Date(task.createdAt).toLocaleDateString()}
-        </div>
-      </div>
-
-      <div className="mb-5">
-        <div className="flex items-center justify-between text-sm text-gray-600 mb-3">
-          <span className="font-medium">Progress</span>
-          <span className="font-medium">{completedSteps}/{totalSteps} steps</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-3">
+        
+        {/* Mini Progress Bar */}
+        <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
           <div
-            className="bg-blue-500 h-3 rounded-full transition-all duration-300"
+            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
       </div>
 
-      <div className="space-y-3">
-        <h4 className="font-medium text-gray-700 text-sm sm:text-base">Workflow Steps:</h4>
-        {task.workflow
-          .sort((a, b) => a.order - b.order)
-          .map((step) => (
-            <div
-              key={step.id}
-              className={`flex items-center gap-4 p-4 rounded-lg cursor-pointer transition-all duration-200 min-h-[56px] ${
-                step.completed ? 'bg-green-50 border border-green-200' : 'bg-gray-50 hover:bg-gray-100 active:bg-gray-200'
-              }`}
-              onClick={() => onStepToggle(task.id, step.id)}
-            >
-              {step.completed ? (
-                <CheckCircle className="text-green-500 shrink-0" size={24} />
-              ) : (
-                <Circle className="text-gray-400 shrink-0" size={24} />
-              )}
-              <span className={`flex-1 text-sm sm:text-base leading-relaxed ${
-                step.completed ? 'line-through text-gray-500' : 'text-gray-800'
-              }`}>
-                {step.title}
-              </span>
-              <span className="text-xs text-gray-400 font-medium shrink-0">#{step.order + 1}</span>
+      {/* Expandable Content */}
+      {isExpanded && (
+        <div className="px-4 sm:px-5 pb-4 sm:pb-5 border-t border-gray-100">
+          {task.description && (
+            <p className="text-gray-600 text-sm sm:text-base mb-4 mt-3">{task.description}</p>
+          )}
+          
+          {/* Dot Map Workflow */}
+          <div className="relative">
+            <h4 className="font-medium text-gray-700 text-sm mb-4">Workflow Progress:</h4>
+            <div className="space-y-1">
+              {task.workflow
+                .sort((a, b) => a.order - b.order)
+                .map((step, index) => (
+                  <div key={step.id} className="relative">
+                    {/* Connecting Line */}
+                    {index < task.workflow.length - 1 && (
+                      <div className="absolute left-3 top-8 w-0.5 h-6 bg-gray-300"></div>
+                    )}
+                    
+                    {/* Step Item */}
+                    <div
+                      className="flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors min-h-[48px]"
+                      onClick={() => onStepToggle(task.id, step.id)}
+                    >
+                      {/* Dot */}
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                        step.completed 
+                          ? 'bg-green-500 border-green-500' 
+                          : 'bg-white border-gray-300 hover:border-blue-400'
+                      }`}>
+                        {step.completed && <CheckCircle className="text-white" size={14} />}
+                        {!step.completed && <div className="w-2 h-2 bg-gray-300 rounded-full"></div>}
+                      </div>
+                      
+                      {/* Step Content */}
+                      <div className="flex-1 min-w-0">
+                        <span className={`text-sm sm:text-base block ${
+                          step.completed ? 'line-through text-gray-500' : 'text-gray-800'
+                        }`}>
+                          {step.title}
+                        </span>
+                      </div>
+                      
+                      {/* Step Number */}
+                      <span className="text-xs text-gray-400 font-medium shrink-0">
+                        {step.order + 1}
+                      </span>
+                    </div>
+                  </div>
+                ))}
             </div>
-          ))}
-      </div>
+          </div>
 
-      {completedSteps === totalSteps && (
-        <div className="mt-5 p-4 bg-green-100 text-green-800 rounded-lg text-center font-medium text-sm sm:text-base">
-          ✅ Task Completed!
+          {completedSteps === totalSteps && (
+            <div className="mt-4 p-3 bg-green-100 text-green-800 rounded-lg text-center font-medium text-sm">
+              ✅ Task Completed!
+            </div>
+          )}
         </div>
       )}
     </div>
