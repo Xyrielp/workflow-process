@@ -27,7 +27,7 @@ export default function SearchAndFilter({ onSearch, onFilter, categories, tags }
     onSearch(query)
   }
 
-  const updateFilter = (key: keyof FilterOptions, value: any) => {
+  const updateFilter = (key: keyof FilterOptions, value: string | undefined) => {
     const newFilters = { ...filters, [key]: value }
     setFilters(newFilters)
     onFilter(newFilters)

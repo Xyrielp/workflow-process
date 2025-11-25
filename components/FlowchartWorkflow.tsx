@@ -92,7 +92,7 @@ export default function FlowchartWorkflow({ steps, onStepToggle }: FlowchartWork
                   </div>
 
                   {step.description && (
-                    <p className="text-xs text-gray-600 mt-2 line-clamp-2">
+                    <p className="text-xs text-gray-600 mt-2 overflow-hidden">
                       {step.description}
                     </p>
                   )}
@@ -153,12 +153,12 @@ export default function FlowchartWorkflow({ steps, onStepToggle }: FlowchartWork
             <div 
               className="bg-blue-500 h-2 rounded-full transition-all duration-500"
               style={{ 
-                width: `${(steps.filter(s => s.completed).length / steps.length) * 100}%` 
+                width: `${steps.length > 0 ? (steps.filter(s => s.completed).length / steps.length) * 100 : 0}%` 
               }}
             />
           </div>
           <span className="text-xs font-bold text-gray-700">
-            {Math.round((steps.filter(s => s.completed).length / steps.length) * 100)}%
+            {steps.length > 0 ? Math.round((steps.filter(s => s.completed).length / steps.length) * 100) : 0}%
           </span>
         </div>
       </div>

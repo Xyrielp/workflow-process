@@ -10,7 +10,12 @@ import { Task, TaskTemplate, TaskStats } from '@/types'
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [searchQuery, setSearchQuery] = useState('')
-  const [filters, setFilters] = useState<any>({})
+  const [filters, setFilters] = useState<{
+    priority?: 'low' | 'medium' | 'high'
+    category?: string
+    status?: 'active' | 'completed' | 'overdue'
+    tags?: string[]
+  }>({})
   const [templates] = useState<TaskTemplate[]>([
     {
       id: '1',
@@ -163,7 +168,7 @@ export default function Home() {
     }
   }, [tasks])
   
-  const categories = [...new Set(tasks.map(t => t.category).filter(Boolean))]
+  const categories = [...new Set(tasks.map(t => t.category).filter((cat): cat is string => Boolean(cat)))]
   const allTags = [...new Set(tasks.flatMap(t => t.tags))]
 
   return (
