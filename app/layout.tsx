@@ -21,7 +21,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="ProcessMap" />
         <link rel="apple-touch-icon" href="/icon.svg" />
       </head>
-      <body className="bg-gray-50 min-h-screen">
+      <body className="bg-gray-50 min-h-screen" style={{backgroundColor: '#f9fafb'}}>
         <div className="px-4 py-6 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 sm:mb-8">Business Process Mapping Tool</h1>
           {children}
